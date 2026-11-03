@@ -19,7 +19,7 @@ export async function connectDB() {
     client = new MongoClient(uri, {
       serverApi: {
         version: ServerApiVersion.v1,
-        strict: true,
+        strict: false,
         deprecationErrors: true,
       },
       connectTimeoutMS: 10000,
