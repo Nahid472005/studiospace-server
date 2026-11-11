@@ -8,7 +8,7 @@ const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-  maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  maxAge: 7 * 24 * 60 * 60 * 1000
 };
 
 export async function registerUser(req, res) {
@@ -19,7 +19,6 @@ export async function registerUser(req, res) {
       return res.status(400).json({ success: false, message: 'Name, email, and password are required.' });
     }
 
-    // Password validation: Uppercase, Lowercase, min 6 characters
     if (password.length < 6) {
       return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long.' });
     }
@@ -92,7 +91,6 @@ export async function loginUser(req, res) {
 
     const token = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '7d' });
 
-    // Set HTTPOnly cookie
     res.cookie('studiospace_token', token, COOKIE_OPTIONS);
 
     return res.status(200).json({
@@ -126,7 +124,6 @@ export async function googleAuth(req, res) {
     let user = await db.collection('users').findOne({ email: normalizedEmail });
 
     if (!user) {
-      // Create user if not present
       const newUser = {
         name: name || email.split('@')[0],
         email: normalizedEmail,
@@ -139,7 +136,6 @@ export async function googleAuth(req, res) {
       const result = await db.collection('users').insertOne(newUser);
       user = { ...newUser, _id: result.insertedId };
     } else {
-      // Update photo if provided
       if (photoURL && photoURL !== user.photoURL) {
         await db.collection('users').updateOne(
           { _id: user._id },

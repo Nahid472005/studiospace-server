@@ -198,7 +198,6 @@ async function seedDatabase() {
   }
 
   try {
-    // 1. Create or update Examiner Test User
     const examinerEmail = 'examiner@studiospace.com';
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash('Examiner123!', salt);
@@ -220,7 +219,6 @@ async function seedDatabase() {
     );
     console.log(`✅ Examiner user created/updated: ${examinerEmail} (Password: Examiner123!)`);
 
-    // 2. Clear existing sample studios to prevent duplicate runs
     const existingCount = await db.collection('studios').countDocuments();
     if (existingCount === 0) {
       await db.collection('studios').insertMany(sampleStudios);

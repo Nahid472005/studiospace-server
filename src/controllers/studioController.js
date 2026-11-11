@@ -8,18 +8,14 @@ export async function getAllStudios(req, res) {
 
     const query = {};
 
-    // Filter by Category
     if (category && category !== 'All' && category !== 'all') {
-      // Case-insensitive regex match or exact match
       query.category = { $regex: new RegExp(`^${category}$`, 'i') };
     }
 
-    // Filter by Featured
     if (featured === 'true') {
       query.featured = true;
     }
 
-    // Keyword Search
     if (search && search.trim()) {
       const searchRegex = new RegExp(search.trim(), 'i');
       query.$or = [
@@ -31,7 +27,6 @@ export async function getAllStudios(req, res) {
       ];
     }
 
-    // Sort order
     let sortOptions = { createdAt: -1 };
     if (sort === 'price-asc') {
       sortOptions = { hourlyRate: 1 };
@@ -110,7 +105,6 @@ export async function createStudio(req, res) {
 
     const db = getDB();
 
-    // Prepare images array
     let imageList = [];
     if (Array.isArray(images) && images.length > 0) {
       imageList = images.filter(Boolean);
@@ -120,7 +114,6 @@ export async function createStudio(req, res) {
       imageList = ['https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1200&q=80'];
     }
 
-    // Format amenities
     let amenitiesList = [];
     if (Array.isArray(amenities)) {
       amenitiesList = amenities;
@@ -177,7 +170,6 @@ export async function updateStudio(req, res) {
       return res.status(404).json({ success: false, message: 'Studio listing not found.' });
     }
 
-    // Verify ownership
     if (existing.hostEmail !== req.user.email.toLowerCase() && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Forbidden: You can only edit your own studio listings.' });
     }
@@ -253,7 +245,6 @@ export async function deleteStudio(req, res) {
       return res.status(404).json({ success: false, message: 'Studio listing not found.' });
     }
 
-    // Ownership check
     if (existing.hostEmail !== req.user.email.toLowerCase() && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Forbidden: You can only delete your own listings.' });
     }

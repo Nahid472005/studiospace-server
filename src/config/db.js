@@ -30,7 +30,6 @@ export async function connectDB() {
     db = client.db('StudioSpace');
     console.log('✅ MongoDB Connected successfully to StudioSpace database');
 
-    // Create required indexes
     try {
       await db.collection('studios').createIndex({ category: 1 });
       await db.collection('studios').createIndex({ hostEmail: 1 });
@@ -40,7 +39,6 @@ export async function connectDB() {
       await db.collection('bookings').createIndex({ userEmail: 1 });
       await db.collection('users').createIndex({ email: 1 }, { unique: true });
     } catch (idxErr) {
-      console.log('Index note:', idxErr.message);
     }
 
     return db;

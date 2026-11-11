@@ -1,7 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { getDB } from '../config/db.js';
 
-// Helper to convert "HH:MM" (e.g., "14:30") to minutes from midnight
 function timeToMinutes(timeStr) {
   if (!timeStr) return 0;
   const parts = timeStr.split(':');
@@ -41,21 +40,17 @@ export async function createBooking(req, res) {
 
     const db = getDB();
 
-    // 1. Fetch Studio details
     const studio = await db.collection('studios').findOne({ _id: new ObjectId(studioId) });
     if (!studio) {
       return res.status(404).json({ success: false, message: 'Studio workspace not found.' });
     }
 
-    // 2. CHALLENGE 2: Double-Booking Prevention Check
-    // Check against all existing Confirmed or Pending bookings for the same studio on the same date
     const existingBookings = await db.collection('bookings').find({
       studioId: studio._id.toString(),
       date: date,
       status: { $in: ['Confirmed', 'Pending'] }
     }).toArray();
 
-    // Check for overlap: (newStart < existingEnd && newEnd > existingStart)
     const collision = existingBookings.find(b => {
       const bStart = timeToMinutes(b.startTime);
       const bEnd = timeToMinutes(b.endTime);
@@ -74,7 +69,6 @@ export async function createBooking(req, res) {
       });
     }
 
-    // 3. Calculate financial breakdown
     const totalHours = Number(((endMinutes - startMinutes) / 60).toFixed(2));
     const subtotal = Math.round(totalHours * studio.hourlyRate);
     const securityDeposit = Number(studio.securityDeposit || 0);
@@ -90,7 +84,7 @@ export async function createBooking(req, res) {
       userEmail: req.user.email.toLowerCase(),
       userName: req.user.name || 'Creative Guest',
       userAvatar: req.user.photoURL,
-      date, // YYYY-MM-DD
+      date,
       startTime,
       endTime,
       totalHours,
@@ -98,7 +92,7 @@ export async function createBooking(req, res) {
       securityDeposit,
       totalPrice,
       notes: notes || '',
-      status: 'Pending', // Initial status required by specification
+      status: 'Pending',
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -152,7 +146,6 @@ export async function cancelBooking(req, res) {
       return res.status(404).json({ success: false, message: 'Reservation not found.' });
     }
 
-    // Check ownership
     if (booking.userEmail !== req.user.email.toLowerCase() && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, message: 'Forbidden: You can only cancel your own bookings.' });
     }

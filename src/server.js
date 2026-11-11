@@ -14,7 +14,6 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS setup supporting credentials (HTTPOnly Cookies)
 const allowedOrigins = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
@@ -26,7 +25,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(null, true); // Allow all in dev / preview
+      callback(null, true);
     }
   },
   credentials: true,
@@ -38,7 +37,6 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// Root & Health check
 app.get('/', (req, res) => {
   res.json({
     name: 'StudioSpace Backend API',
@@ -56,13 +54,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Mount Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/studios', studioRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/users', userRoutes);
 
-// 404 Fallback for unmatched API routes
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -70,7 +66,6 @@ app.use((req, res) => {
   });
 });
 
-// Global Error Handler
 app.use((err, req, res, next) => {
   console.error('Unhandled server error:', err);
   res.status(err.status || 500).json({
@@ -79,7 +74,6 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start Server
 async function startServer() {
   await connectDB();
   app.listen(PORT, () => {
