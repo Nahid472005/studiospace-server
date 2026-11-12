@@ -4,10 +4,11 @@ import { getDB } from '../config/db.js';
 import { ObjectId } from 'mongodb';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'studiospace_super_secure_jwt_secret_key_2026_xyz';
+const isProd = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+  secure: isProd,
+  sameSite: isProd ? 'none' : 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000
 };
 
