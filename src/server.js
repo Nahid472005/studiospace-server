@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
-import { connectDB } from './config/db.js';
+import { connectDB, lastDbError } from './config/db.js';
 
 import authRoutes from './routes/authRoutes.js';
 import studioRoutes from './routes/studioRoutes.js';
@@ -56,9 +56,26 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/api/health', (req, res) => {
+app.get('/api/health', async (req, res) => {
+  let dbStatus = 'disconnected';
+  let dbError = null;
+  try {
+    const db = await connectDB();
+    if (db) {
+      dbStatus = 'connected';
+    } else {
+      dbError = lastDbError;
+    }
+  } catch (err) {
+    dbError = err.message;
+  }
+
   res.json({
     status: 'healthy',
+    hasMongoUri: Boolean(process.env.MONGODB_URI),
+    mongoUriPrefix: process.env.MONGODB_URI ? process.env.MONGODB_URI.substring(0, 15) : 'NOT_SET',
+    dbStatus,
+    dbError,
     timestamp: new Date().toISOString(),
     uptime: process.uptime()
   });

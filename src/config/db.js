@@ -6,17 +6,22 @@ const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/StudioSpace';
 
 let client;
 let db;
+export let lastDbError = null;
 
 export async function connectDB() {
   if (db) return db;
 
-  if (uri.includes('<YOUR_PASSWORD>') || uri.includes('<db_password>')) {
-    console.warn('\n⚠️ [MongoDB Warning]: Please replace <YOUR_PASSWORD> with your actual MongoDB Atlas password in server/.env');
+  const currentUri = process.env.MONGODB_URI || uri;
+
+  if (!currentUri || currentUri.includes('localhost') || currentUri.includes('<YOUR_PASSWORD>') || currentUri.includes('<db_password>')) {
+    const warnMsg = !currentUri ? 'MONGODB_URI environment variable is not defined.' : (currentUri.includes('localhost') ? 'MONGODB_URI is falling back to localhost.' : 'Password placeholder detected in MONGODB_URI.');
+    console.warn('\n⚠️ [MongoDB Warning]:', warnMsg);
+    lastDbError = warnMsg;
     return null;
   }
 
   try {
-    client = new MongoClient(uri, {
+    client = new MongoClient(currentUri, {
       serverApi: {
         version: ServerApiVersion.v1,
         strict: false,
@@ -28,6 +33,8 @@ export async function connectDB() {
 
     await client.connect();
     db = client.db('StudioSpace');
+    lastDbError = null;
+    console.log('✅ MongoDB Connected successfully to StudioSpace database');
     console.log('✅ MongoDB Connected successfully to StudioSpace database');
 
     try {
@@ -43,6 +50,7 @@ export async function connectDB() {
 
     return db;
   } catch (error) {
+    lastDbError = error.message;
     console.error('❌ MongoDB Connection Error:', error.message);
     return null;
   }
